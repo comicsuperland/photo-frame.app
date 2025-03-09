@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Frame App</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        .input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .input-box {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Photo Frame Creator</h2>
+        <label for="photoInput">Upload Your Photo:</label>
+        <input type="file" id="photoInput" accept="image/*">
+        <br>
+        <div class="input-container">
+            <input type="text" id="year" class="input-box" placeholder="2025-26" value="2025-26">
+            <input type="text" id="name" class="input-box" placeholder="Enter Name">
+            <input type="text" id="other" class="input-box" placeholder="Enter Class">
+        </div>
+        <br>
+        <div class="slider-container">
+            <label for="xPos">Move Image Left/Right:</label>
+            <input type="range" id="xPos" min="0" max="500" value="115" oninput="updateImage()">
+            <br>
+            <label for="yPos">Move Image Up/Down:</label>
+            <input type="range" id="yPos" min="0" max="600" value="170" oninput="updateImage()">
+            <br>
+            <label for="size">Resize Image:</label>
+            <input type="range" id="size" min="100" max="400" value="270" oninput="updateImage()">
+            <br>
+        </div>
+        <button onclick="generateImage()">Generate Image</button>
+        <br>
+        <canvas id="canvas" width="500" height="600"></canvas>
+        <br>
+        <button id="downloadBtn" style="display:none;" onclick="downloadImage()">Download Image</button>
+    </div>
+    
+    <script>
+        let frameImg = new Image();
+        frameImg.src = 'bgimage.png'; // Your frame image
+        let userImg = new Image();
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let imgX = 115, imgY = 170, imgSize = 270;
+
+        document.getElementById('photoInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                userImg.src = URL.createObjectURL(file);
+                userImg.onload = generateImage;
+            }
+        });
+
+        function updateImage() {
+            imgX = parseInt(document.getElementById('xPos').value);
+            imgY = parseInt(document.getElementById('yPos').value);
+            imgSize = parseInt(document.getElementById('size').value);
+            generateImage();
+        }
+
+        function generateImage() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw uploaded image first (BELOW frame)
+            if (userImg.src) {
+                ctx.drawImage(userImg, imgX, imgY, imgSize, imgSize);
+            }
+
+            // Draw frame on top
+            ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+
+            // Add text
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            const nameText = document.getElementById('name').value;
+            const otherText = document.getElementById('other').value;
+            ctx.fillText(nameText, (canvas.width - ctx.measureText(nameText).width) / 2, 460);
+            ctx.fillText(otherText, (canvas.width - ctx.measureText(otherText).width) / 2, 480);
+
+            ctx.fillStyle = 'black';
+            ctx.fillText(document.getElementById('year').value, 410, 64);
+
+            // Show download button
+            document.getElementById('downloadBtn').style.display = 'block';
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL("image/png");
+            link.download = 'framed_image.png';
+            link.click();
+        }
+    </script>
+</body>
+</html>
