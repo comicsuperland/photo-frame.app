@@ -85,12 +85,17 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let imgX = 115, imgY = 170, imgSize = 270;
+        let originalWidth, originalHeight;
 
         document.getElementById('photoInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 userImg.src = URL.createObjectURL(file);
-                userImg.onload = generateImage;
+                userImg.onload = function () {
+                    originalWidth = userImg.width;
+                    originalHeight = userImg.height;
+                    generateImage();
+                };
             }
         });
 
@@ -106,7 +111,11 @@
 
             // Draw uploaded image first (BELOW frame)
             if (userImg.src) {
-                ctx.drawImage(userImg, imgX, imgY, imgSize, imgSize);
+                let aspectRatio = originalWidth / originalHeight;
+                let newWidth = imgSize;
+                let newHeight = imgSize / aspectRatio;
+                
+                ctx.drawImage(userImg, imgX, imgY, newWidth, newHeight);
             }
 
             // Draw frame on top
